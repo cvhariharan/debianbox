@@ -1,0 +1,40 @@
+- name: Install docker dependencies
+  ansible.builtin.apt:
+    name: "{{ item }}"
+  loop: "{{ docker_dependencies }}"
+  when: ansible_os_family == "Debian"
+
+- name: Add docker GPG apt key
+  ansible.builtin.apt_key:
+    url: "{{ docker_apt_key_url }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Add docker repo
+  ansible.builtin.apt_repository:
+    repo: "{{ docker_repo }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install docker-ce
+  ansible.builtin.apt:
+    update_cache: true
+    state: present
+    name: "{{ item }}"
+  loop: "{{ docker_packages }}"
+  when: ansible_os_family == "Debian"
+
+- name: Modify docker daemon
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker
+  notify: Restart dockerd
+
+- name: Flush handler to restart docker
+  ansible.builtin.meta: flush_handlers
+  
+- name: Enable and start docker
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started

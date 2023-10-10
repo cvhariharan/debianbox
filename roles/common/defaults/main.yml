@@ -1,0 +1,27 @@
+hostname: debian
+
+username: apprunner
+home_dir: /home/{{ username }}
+user_password: changeme
+
+# If set to true, will perform an apt upgrade
+allow_upgrade: false
+
+# Packages to be installed
+default_packages:
+  - ufw
+  - openssl
+  - git
+  - vim
+  - curl
+  - sudo
+  - network-manager
+
+# Default groups to be created and assigned to the user
+default_groups:
+  - "{{ username }}"
+  - ssh
+  - docker
+  - sudo
+
+timezone: Asia/Kolkata

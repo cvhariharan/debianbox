@@ -1,0 +1,56 @@
+sshd_config_file: /etc/ssh/sshd_config
+ssh_port: 5666
+
+fail2ban_package: fail2ban
+fail2ban_jail_config_dir: /etc/fail2ban
+
+default_firewall_ports:
+  - port: "{{ ssh_port }}"
+    protocol: tcp
+    rule: allow
+
+# This variable can be set from playbook.yml to modify additional ports using UFW
+firewall_ports: []
+
+ufw_firewall_ports: "{{ default_firewall_ports + firewall_ports }}"
+
+sysctl_default_config:
+
+
+  # Disable TCP SYN to prevent SYN flood attacks
+  - key: net.ipv4.tcp_syncookies
+    value: 1
+
+  # Randomize virtual address space to prevent known memory exploits
+  - key: kernel.randomize_va_space
+    value: 2
+
+  # Prevent using Alt+SysRq to send low level commands
+  # https://www.debian.org/doc/manuals/securing-debian-manual/restrict-sysrq.it.html
+  - key: kernel.sysrq
+    value: 0
+  
+  # Minimize swapping processing from physical memory
+  - key: vm.swappiness
+    value: 10
+
+  # Set a relatively high percent of dirty pages before urgently writing to disk to minimize I/O
+  - key: vm.dirty_ratio
+    value: 60
+
+  # Set a relatively small value to ensure dirty pages are written to disk. This is less aggressive.
+  - key: vm.dirty_background_ratio
+    value: 2
+
+  # Restrict kernel logs to only privileged users
+  - key: kernel.dmesg_restrict
+    value: 1
+
+  # Set the max open files by using 256 for every 4MB of RAM. 1024/4 = 256; 256*256 = 65536 
+  - key: fs.file-max
+    value: 65536
+
+# This variable can be set from playbook.yml to add additional sysctl values
+sysctl_config: []
+
+sysctl_configuration: "{{ sysctl_default_config + sysctl_config }}"

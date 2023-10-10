@@ -1,0 +1,52 @@
+- name: Update repos
+  block:
+    - name: Update Package Manager Cache (APT)
+      ansible.builtin.apt:
+        update_cache: true
+    - name: Upgrade (APT)
+      ansible.builtin.apt:
+        upgrade: "{{ allow_upgrade }}"
+  when: ansible_os_family == "Debian"
+
+- name: Install default dependencies
+  ansible.builtin.apt:
+    name: "{{ item }}"
+  loop: "{{ default_packages }}"
+  when: ansible_os_family == "Debian"
+
+- name: Create default groups
+  ansible.builtin.group:
+    name: "{{ item }}"
+  loop: "{{ default_groups }}"
+
+- name: Create user
+  ansible.builtin.user:
+    name: "{{ username }}"
+    create_home: true
+    home: "{{ home_dir }}"
+    password: "{{ user_password | password_hash('sha512') }}"
+    append: true
+    update_password: on_create
+    groups: "{{ default_groups }}"
+    shell: /bin/bash
+  notify: Reset SSH connection
+
+- name: Update hostname
+  ansible.builtin.hostname:
+    name: "{{ hostname }}"
+    use: "{{ ansible_os_family | lower }}"
+
+- name: Update hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: 127.0.0.1 {{ hostname }}
+
+- name: Start network manager
+  ansible.builtin.systemd:
+    name: NetworkManager
+    enabled: true
+    state: restarted
+
+- name: Update timezone
+  community.general.timezone:
+    name: "{{ timezone }}"

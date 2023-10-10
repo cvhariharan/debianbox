@@ -1,0 +1,21 @@
+docker_dependencies:
+  - curl
+  - ca-certificates
+  - gnupg
+  - software-properties-common
+  - python3-pip
+
+docker_apt_key_url: https://download.docker.com/linux/debian/gpg
+docker_repo: deb https://download.docker.com/linux/debian {{ ansible_facts.distribution_release}} stable
+
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+  - docker-compose
+
+# Used to modify the docker daemon
+docker_log_max_size: 10m
+docker_log_max_files: 10

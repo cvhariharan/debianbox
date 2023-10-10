@@ -1,0 +1,7 @@
+collections:
+  - name: community.general
+    version: 7.4.0
+    type: galaxy
+  - name: ansible.posix
+    version: 1.5.4
+    type: galaxy

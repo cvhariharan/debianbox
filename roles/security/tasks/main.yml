@@ -1,0 +1,69 @@
+- name: Secure SSH
+  ansible.builtin.lineinfile:
+    dest: "{{ sshd_config_file }}"
+    line: "{{ item.line }}"
+    state: present
+    regexp: "{{ item.regexp }}"
+    mode: 0644
+  with_items: 
+    - line: "PasswordAuthentication yes"
+      regexp: "^PasswordAuthentication"
+    - line: "PermitRootLogin no"
+      regexp: "^PermitRootLogin"
+    - line: "Port {{ ssh_port }}"
+      regexp: "^Port"
+    - line: "PermitEmptyPasswords no"
+      regexp: "^PermitEmptyPasswords"
+    - line: "X11Forwarding no"
+      regexp: "^X11Forwarding"
+    - line: "Protocol 2"
+      regexp: "^Protocol"
+    - line: "ClientAliveInterval 300"
+      regexp: "^ClientAliveInterval"
+    - line: "ClientAliveCountMax 3"
+      regexp: "^ClientAliveCountMax"
+  notify: Restart ssh
+
+- name: Install fail2ban
+  ansible.builtin.apt:
+    name: "{{ fail2ban_package }}"
+    state: present
+
+- name: Create jail.local
+  ansible.builtin.template:
+    src: jail.local.j2
+    dest: "{{ fail2ban_jail_config_dir }}"
+    mode: 0600
+  notify: Restart fail2ban
+
+# - name: Disable root account
+#   ansible.builtin.user:
+#     name: root
+#     password: '!'
+
+- name: Allow outgoing connections
+  community.general.ufw:
+    direction: outgoing
+    policy: allow
+
+- name: Deny incoming connections
+  community.general.ufw:
+    direction: incoming
+    policy: deny
+
+- name: Allow ports
+  community.general.ufw:
+    rule: "{{ item.rule }}"
+    proto: "{{ item.protocol }}"
+    port: "{{ item.port }}"
+  loop: "{{ ufw_firewall_ports }}"
+  when: item.port != ''
+  notify: Enable UFW
+
+- name: Sysctl configuration
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+  loop: "{{ sysctl_configuration }}"
+

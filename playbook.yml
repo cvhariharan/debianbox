@@ -1,0 +1,8 @@
+- name: Provision Debian
+  hosts: all
+  become: true
+  roles:
+    - role: common
+    - role: security
+    - role: docker
+    
