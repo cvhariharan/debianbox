@@ -4,6 +4,8 @@ username: apprunner
 home_dir: /home/{{ username }}
 user_password: changeme
 
+ssh_public_key_file: id_rsa.pub
+
 # If set to true, will perform an apt upgrade
 allow_upgrade: false
 

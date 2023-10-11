@@ -31,6 +31,12 @@
     shell: /bin/bash
   notify: Reset SSH connection
 
+- name: Add authorized key for SSH
+  ansible.posix.authorized_key:
+    user: "{{ username }}"
+    state: present
+    key: "{{ lookup('file', ssh_public_key_file)}}"
+
 - name: Update hostname
   ansible.builtin.hostname:
     name: "{{ hostname }}"

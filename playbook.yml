@@ -3,6 +3,8 @@
   become: true
   roles:
     - role: common
+      vars:
+        ssh_public_key_file: ansible.pub
     - role: security
     - role: docker
     
