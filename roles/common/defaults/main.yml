@@ -18,6 +18,7 @@ default_packages:
   - curl
   - sudo
   - network-manager
+  - unzip
 
 # Default groups to be created and assigned to the user
 default_groups:
